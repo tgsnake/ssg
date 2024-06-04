@@ -130,7 +130,7 @@ export default function Home() {
           <li
             className={`step step-primary overflow-hidden ${state < 5 && state >= 1 ? 'step-active' : 'step-done'}`}
           >
-            <div className="step-circle">{state < 5 && state >= 1 ? '2' : <CheckSVG />}</div>
+            <div className="step-circle">{state < 5 ? '2' : <CheckSVG />}</div>
             <h3>Login</h3>
           </li>
           <li
