@@ -1,118 +1,203 @@
-import Image from 'next/image'
-import { Inter } from 'next/font/google'
-
-const inter = Inter({ subsets: ['latin'] })
+/**
+ * tgsnake - Telegram MTProto framework for nodejs.
+ * Copyright (C) 2024 butthx <https://github.com/butthx>
+ *
+ * THIS FILE IS PART OF TGSNAKE
+ *
+ * tgsnake is a free software : you can redistribute it and/or modify
+ * it under the terms of the MIT License as published.
+ */
+import { useState } from 'react';
+import { Client, Storages } from '@tgsnake/core';
+import { GithubSVG, CheckSVG } from '@/components/svg';
+import {
+  FormIntialApp,
+  FormInputPhoneOrToken,
+  FormInputOTP,
+  FormInputPWD,
+} from '@/components/form';
+import { Alert } from '@/components/alert';
+import { ConsoleFeed } from '@/components/console';
+import type {
+  OnNextFormInitialAppClickedParams,
+  OnNextFormPhoneClickedParams,
+  OnNextFormOTPorPWDClickedParams,
+} from '@/types/types';
 
 export default function Home() {
+  const [state, setState] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [disabled, setDisabled] = useState<boolean>(false);
+  const [client, setClient] = useState<Client>();
+  const [errorMsg, setErrorMsg] = useState<string>();
+  const [hintPwd, setHintPwd] = useState<string>();
+  const [stringSession, setStringSession] = useState<string>();
+  const [waiting, setWaiting] = useState<Wait<string>>();
+
+  const onNextFormInitialApp = (params: OnNextFormInitialAppClickedParams) => {
+    setState(1);
+    const _client = new Client(new Storages.StringSession(''), params.apiHash, params.apiId, {
+      tcp: 4,
+      ...params.clientOptions,
+    });
+    setClient(_client);
+  };
+  const onNextFormPhone = async (params: OnNextFormPhoneClickedParams) => {
+    setDisabled(true);
+    if (client) {
+      if (params.loginAs === 'bot') {
+        setState(5);
+        await client.start({
+          botToken: params.value,
+        });
+        setLoading(false);
+        const session = await client.exportSession();
+        console.log('Your session:', session);
+        setStringSession(session);
+        return client._session.stop();
+      }
+      await client.start({
+        phoneNumber: async () => {
+          return params.value;
+        },
+        code: () => {
+          setState(2);
+          setDisabled(false);
+          const _waiting = new Wait<string>();
+          setWaiting(_waiting);
+          return _waiting.promise;
+        },
+        password: (hint) => {
+          setState(3);
+          if (state !== 3) setHintPwd(hint);
+          setDisabled(false);
+          const _waiting = new Wait<string>();
+          setWaiting(_waiting);
+          return _waiting.promise;
+        },
+        recoveryCode: () => {
+          setState(4);
+          setDisabled(false);
+          const _waiting = new Wait<string>();
+          setWaiting(_waiting);
+          return _waiting.promise;
+        },
+        authError: (error) => {
+          console.log(error);
+          setDisabled(false);
+          setWaiting(undefined);
+          setErrorMsg(error.message);
+        },
+      });
+      setState(5);
+      setLoading(false);
+      setErrorMsg(undefined);
+      const session = await client.exportSession();
+      console.log('Your session:', session);
+      setStringSession(session);
+      return client._session.stop();
+    }
+  };
+  const onNextFormOTPorPWD = (params: OnNextFormOTPorPWDClickedParams) => {
+    setErrorMsg(undefined);
+    if (waiting) {
+      setDisabled(true);
+      waiting.resolve(params.value);
+    }
+  };
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
-    >
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/pages/index.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <>
+      <header className="navbar navbar-glass sticky top-0">
+        <div className="navbar-start">
+          <span className="navbar-item font-bold text-xl">tgsnake</span>
         </div>
-      </div>
+        <div className="navbar-end">
+          <span className="navbar-item">
+            <a href="#" target="_blank">
+              <GithubSVG />
+            </a>
+          </span>
+        </div>
+      </header>
+      <main className="px-4 py-2 mt-6 md:w-1/2 md:mx-auto">
+        <ol className="steps mb-10">
+          <li
+            className={`step step-primary overflow-hidden ${state === 0 ? 'step-active' : 'step-done'}`}
+          >
+            <div className="step-circle">{state === 0 ? '1' : <CheckSVG />}</div>
+            <h3>Build App</h3>
+          </li>
+          <li
+            className={`step step-primary overflow-hidden ${state < 5 && state >= 1 ? 'step-active' : 'step-done'}`}
+          >
+            <div className="step-circle">{state < 5 && state >= 1 ? '2' : <CheckSVG />}</div>
+            <h3>Login</h3>
+          </li>
+          <li
+            className={`step step-primary overflow-hidden ${state === 5 ? 'step-active' : 'step-done'}`}
+          >
+            <div className="step-circle">3</div>
+            <h3>Get Session</h3>
+          </li>
+        </ol>
+        {state === 2 ? (
+          <Alert
+            type="info"
+            message="The OTP code has been sent to your account via the Telegram application"
+          />
+        ) : state === 3 ? (
+          <Alert type="info" message={hintPwd || ''} />
+        ) : state === 4 ? (
+          <Alert
+            type="info"
+            message="Recovery code has been sent to your recovery email. Please open your email and check the spam folder."
+          />
+        ) : (
+          ''
+        )}
+        {errorMsg ? <Alert type="error" message={errorMsg} /> : ''}
+        {state === 0 ? (
+          <FormIntialApp onNext={onNextFormInitialApp} disabled={state > 0 || disabled} />
+        ) : state === 1 ? (
+          <FormInputPhoneOrToken onNext={onNextFormPhone} disabled={state > 1 || disabled} />
+        ) : state === 2 ? (
+          <FormInputOTP onNext={onNextFormOTPorPWD} disabled={state > 2} recovery={false} />
+        ) : state === 3 ? (
+          <FormInputPWD onNext={onNextFormOTPorPWD} disabled={state > 3 || disabled} />
+        ) : state === 4 ? (
+          <FormInputOTP
+            onNext={onNextFormOTPorPWD}
+            disabled={state > 4 || disabled}
+            recovery={true}
+          />
+        ) : state === 5 ? (
+          <div>
+            <p className="font-bold">Your string session</p>
+            <div className={loading ? 'skeleton h-24' : ''}>
+              {!loading && (
+                <pre className="break-all overflow-y-scroll whitespace-pre-wrap p-2 bg-zinc-800 rounded-lg my-4">
+                  <code>{stringSession}</code>
+                </pre>
+              )}
+            </div>
+          </div>
+        ) : (
+          ''
+        )}
+        <ConsoleFeed />
+      </main>
+    </>
+  );
+}
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700/10 after:dark:from-sky-900 after:dark:via-[#0141ff]/40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Discover and deploy boilerplate example Next.js&nbsp;projects.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+class Wait<T> {
+  promise!: Promise<T>;
+  resolve!: (resolve: T) => any;
+  reject!: (error: string) => any;
+  constructor() {
+    this.promise = new Promise((resolve, reject) => {
+      this.resolve = resolve;
+      this.reject = reject;
+    });
+  }
 }
