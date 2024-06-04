@@ -406,9 +406,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tgsnake/core@npm:1.13.2-browser.0":
-  version: 1.13.2-browser.0
-  resolution: "@tgsnake/core@npm:1.13.2-browser.0"
+"@tgsnake/core@npm:1.13.3-browser.0":
+  version: 1.13.3-browser.0
+  resolution: "@tgsnake/core@npm:1.13.3-browser.0"
   dependencies:
     "@tgsnake/log": "npm:latest"
     aes-js: "npm:3.1.2"
@@ -423,7 +423,7 @@ __metadata:
     socks: "npm:2.8.3"
     stream-browserify: "npm:3.0.0"
     util: "npm:0.12.5"
-  checksum: 10c0/3d581595e7a83a88c34ac31ee694671b8e2f9a39234684d2eb9bfe7dc6b74f2bf89ef4504b50a1b73d94501af7c4cc72f1bae6dcbb4e179c4ddef3435030b469
+  checksum: 10c0/e8e91980706b4e112e1d7efe0e38134942e618c31a851b98ae912973ee76b757bc7df3fa7514a955ef46b8aa5cf02c851c970d7bfbac022a910faa78f160252b
   languageName: node
   linkType: hard
 
@@ -747,7 +747,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "browser@workspace:."
   dependencies:
-    "@tgsnake/core": "npm:1.13.2-browser.0"
+    "@tgsnake/core": "npm:1.13.3-browser.0"
     "@types/node": "npm:^20.14.0"
     "@types/react": "npm:^18.3.3"
     "@types/react-dom": "npm:^18.3.0"

@@ -38,6 +38,7 @@ export default function Home() {
     setState(1);
     const _client = new Client(new Storages.StringSession(''), params.apiHash, params.apiId, {
       tcp: 4,
+      local: window.location.protocol !== 'https:',
       ...params.clientOptions,
     });
     setClient(_client);
