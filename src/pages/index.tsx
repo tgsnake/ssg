@@ -113,7 +113,7 @@ export default function Home() {
         </div>
         <div className="navbar-end">
           <span className="navbar-item">
-            <a href="#" target="_blank">
+            <a href="https://github.com/tgsnake/ssg" target="_blank">
               <GithubSVG />
             </a>
           </span>
