@@ -8,14 +8,12 @@
  * it under the terms of the MIT License as published.
  */
 
+import type { ClientOptions } from '@tgsnake/core/browser/src/client/Client';
+
 export interface OnNextFormInitialAppClickedParams {
   apiHash: string;
   apiId: number;
-  clientOptions: {
-    appVersion?: string;
-    deviceModel?: string;
-    systemVersion?: string;
-  };
+  clientOptions: ClientOptions;
 }
 export type OnNextFormInitialAppClicked = (param: OnNextFormInitialAppClickedParams) => any;
 export interface PropsFormInitialApp {

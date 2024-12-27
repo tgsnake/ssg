@@ -29,7 +29,19 @@ export function FormIntialApp({ onNext, disabled }: PropsFormInitialApp) {
       e.target.elements['system-ver'].value !== ''
         ? e.target.elements['system-ver'].value
         : undefined;
-    return onNext({ apiId, apiHash, clientOptions: { appVersion, deviceModel, systemVersion } });
+    const server = e.target.elements['server'].value;
+    const ipv = e.target.elements['ipv'].value;
+    return onNext({
+      apiId,
+      apiHash,
+      clientOptions: {
+        appVersion,
+        deviceModel,
+        systemVersion,
+        testMode: server === 'test',
+        ipv6: ipv === '6',
+      },
+    });
   };
   return (
     <form onSubmit={onSubmitForm} className="mt-4" autoComplete="on">
@@ -42,7 +54,8 @@ export function FormIntialApp({ onNext, disabled }: PropsFormInitialApp) {
         className="input input-block input-ghost-primary input-solid"
         placeholder="Input your api id"
         required
-        type="number"
+        type="text"
+        accept="number"
         disabled={disabled}
       />
       <label htmlFor="api-hash" className="block p-2 font-bold">
@@ -92,6 +105,34 @@ export function FormIntialApp({ onNext, disabled }: PropsFormInitialApp) {
           type="text"
           disabled={disabled}
         />
+        <label htmlFor="server" className="block font-bold text-center">
+          Connect to
+        </label>
+        <select
+          id="server"
+          name="server"
+          className="input input-block input-ghost-primary input-solid"
+          disabled={disabled}
+          required
+          defaultValue={'prod'}
+        >
+          <option value="prod">Production DC Server</option>
+          <option value="test">Test DC Server</option>
+        </select>
+        <label htmlFor="ipv" className="block font-bold text-center">
+          Connect with
+        </label>
+        <select
+          id="ipv"
+          name="ipv"
+          className="input input-block input-ghost-primary input-solid"
+          disabled={disabled}
+          required
+          defaultValue={'4'}
+        >
+          <option value="4">IPV4</option>
+          <option value="6">IPV6</option>
+        </select>
       </div>
       <button disabled={disabled} type="submit" className="btn btn-solid-primary btn-block mt-4">
         NEXT

@@ -8,7 +8,7 @@
  * it under the terms of the MIT License as published.
  */
 import { useState } from 'react';
-import { Client, Storages } from '@tgsnake/core';
+import { Client, Storages, Versions } from '@tgsnake/core';
 import { GithubSVG, CheckSVG } from '@/components/svg';
 import {
   FormIntialApp,
@@ -185,6 +185,11 @@ export default function Home() {
         ) : (
           ''
         )}
+        <div className="mt-4">
+          <p>
+            This APP use tgsnake core {Versions.version} {Versions.getType()}
+          </p>
+        </div>
         <ConsoleFeed />
       </main>
     </>
